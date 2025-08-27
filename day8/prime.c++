@@ -18,7 +18,7 @@ void prime(int num){
     
 }
 int main(){
-    int arr[5]={2,1,7,11,13};
+    int arr[5]={2,1,7,-11,13};
     for(int i=0;i<5;i++){
         prime(arr[i]);
     }
