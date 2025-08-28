@@ -1,7 +1,7 @@
 #include<iostream>
 using namespace std;
 int main(){
-    int num=-123;
+    int num=-121;
     int rev=0;
     while(num!=0){
     int rem=num%10;
