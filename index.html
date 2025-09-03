@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stream-Based Quiz</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      text-align: center;
+      padding: 20px;
+    }
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    h1 {
+      color: #333;
+    }
+    select, button {
+      padding: 10px;
+      margin: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    .question {
+      text-align: left;
+      margin: 20px 0;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #fafafa;
+    }
+    .options label {
+      display: block;
+      margin: 5px 0;
+    }
+    .correct {
+      color: green;
+      font-weight: bold;
+    }
+    .wrong {
+      color: red;
+      font-weight: bold;
+    }
+    .score {
+      margin-top: 20px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎓 Stream-Based Quiz</h1>
+
+    <!-- Stream Selection -->
+    <div id="streamSelection">
+      <select id="stream" onchange="handleStreamChange()">
+        <option value="">-- Select Stream --</option>
+        <option value="science">Science</option>
+        <option value="commerce">Commerce</option>
+        <option value="arts">Arts</option>
+      </select>
+
+      <!-- Science Sub-streams -->
+      <select id="scienceSubject" style="display:none;">
+        <option value="">-- Select Subject --</option>
+        <option value="physics">Physics</option>
+        <option value="chemistry">Chemistry</option>
+        <option value="maths">Maths</option>
+        <option value="biology">Biology</option>
+      </select>
+
+      <button onclick="startQuiz()">Start Quiz</button>
+    </div>
+
+    <!-- Quiz Section -->
+    <div id="quiz" style="display:none;"></div>
+
+    <!-- Submit Button -->
+    <div id="submitSection" style="display:none;">
+      <button onclick="submitQuiz()">Submit Quiz</button>
+    </div>
+
+    <!-- Score Section -->
+    <div id="result" class="score"></div>
+  </div>
+
+  <script>
+    // ================= Question Bank ==================
+    const questionBank = {
+      science: {
+        physics: [
+          { q: "What is the SI unit of Force?", options: ["Newton", "Joule", "Pascal"], ans: "Newton" },
+          { q: "Speed of light in vacuum is?", options: ["3×10^8 m/s", "3×10^6 m/s", "3×10^5 km/s"], ans: "3×10^8 m/s" },
+          { q: "Which law explains action and reaction?", options: ["Newton’s 1st Law", "Newton’s 2nd Law", "Newton’s 3rd Law"], ans: "Newton’s 3rd Law" },
+          // ... add 20+ Physics questions
+        ],
+        chemistry: [
+          { q: "H2O is known as?", options: ["Hydrogen Peroxide", "Water", "Hydroxide"], ans: "Water" },
+          { q: "pH value less than 7 indicates?", options: ["Acidic", "Neutral", "Basic"], ans: "Acidic" },
+          { q: "Atomic number of Oxygen?", options: ["6", "8", "10"], ans: "8" },
+          // ... add 20+ Chemistry questions
+        ],
+        maths: [
+          { q: "Derivative of x² is?", options: ["x", "2x", "x³"], ans: "2x" },
+          { q: "Value of sin(90°)?", options: ["0", "1", "-1"], ans: "1" },
+          { q: "Formula of area of circle?", options: ["πr²", "2πr", "πd"], ans: "πr²" },
+          // ... add 20+ Maths questions
+        ],
+        biology: [
+          { q: "Powerhouse of the cell?", options: ["Nucleus", "Mitochondria", "Ribosome"], ans: "Mitochondria" },
+          { q: "Blood is pumped by?", options: ["Lungs", "Heart", "Brain"], ans: "Heart" },
+          { q: "Plants prepare food by?", options: ["Respiration", "Photosynthesis", "Transpiration"], ans: "Photosynthesis" },
+          // ... add 20+ Biology questions
+        ]
+      },
+      commerce: [
+        { q: "Which of the following is a liability?", options: ["Cash", "Creditors", "Machinery"], ans: "Creditors" },
+        { q: "Who is known as the father of Economics?", options: ["Adam Smith", "Karl Marx", "Keynes"], ans: "Adam Smith" },
+        // ... add 20+ Commerce questions
+      ],
+      arts: [
+        { q: "Who painted the Mona Lisa?", options: ["Leonardo da Vinci", "Picasso", "Michelangelo"], ans: "Leonardo da Vinci" },
+        { q: "Shakespeare was famous for?", options: ["Poetry", "Plays", "Both"], ans: "Both" },
+        // ... add 20+ Arts questions
+      ]
+    };
+
+    let currentQuestions = [];
+
+    // Handle stream change (show subject if science is selected)
+    function handleStreamChange() {
+      const stream = document.getElementById("stream").value;
+      const subjectDropdown = document.getElementById("scienceSubject");
+      subjectDropdown.style.display = (stream === "science") ? "inline-block" : "none";
+    }
+
+    // Randomly pick 5 questions
+    function getRandomQuestions(arr, num=5) {
+      let shuffled = [...arr].sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, num);
+    }
+
+    // Start Quiz
+    function startQuiz() {
+      const stream = document.getElementById("stream").value;
+      if (!stream) {
+        alert("Please select a stream!");
+        return;
+      }
+
+      if (stream === "science") {
+        const subject = document.getElementById("scienceSubject").value;
+        if (!subject) {
+          alert("Please select a subject in Science!");
+          return;
+        }
+        currentQuestions = getRandomQuestions(questionBank.science[subject], 5);
+      } else {
+        currentQuestions = getRandomQuestions(questionBank[stream], 5);
+      }
+
+      document.getElementById("quiz").innerHTML = "";
+      currentQuestions.forEach((q, i) => {
+        let optionsHtml = "";
+        q.options.forEach(opt => {
+          optionsHtml += `
+            <label>
+              <input type="radio" name="q${i}" value="${opt}"> ${opt}
+            </label>`;
+        });
+        document.getElementById("quiz").innerHTML += `
+          <div class="question">
+            <p><b>${i+1}. ${q.q}</b></p>
+            <div class="options">${optionsHtml}</div>
+          </div>`;
+      });
+
+      document.getElementById("quiz").style.display = "block";
+      document.getElementById("submitSection").style.display = "block";
+      document.getElementById("result").innerHTML = "";
+    }
+
+    // Submit Quiz
+    function submitQuiz() {
+      let score = 0;
+      currentQuestions.forEach((q, i) => {
+        const selected = document.querySelector(`input[name="q${i}"]:checked`);
+        const questionDiv = document.getElementsByClassName("question")[i];
+        if (selected) {
+          if (selected.value === q.ans) {
+            score++;
+            questionDiv.innerHTML += `<p class="correct">✔ Correct!</p>`;
+          } else {
+            questionDiv.innerHTML += `<p class="wrong">✘ Wrong! Correct Answer: ${q.ans}</p>`;
+          }
+        } else {
+          questionDiv.innerHTML += `<p class="wrong">⚠ Not Answered! Correct Answer: ${q.ans}</p>`;
+        }
+      });
+      document.getElementById("result").innerHTML = `Your Score: ${score} / ${currentQuestions.length}`;
+      document.getElementById("submitSection").style.display = "none";
+    }
+  </script>
+</body>
+</html>
