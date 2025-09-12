@@ -5,7 +5,7 @@ int main(){
     int sum=0;
     int temp=0;
     int size=sizeof(arr)/sizeof(arr[0]);
-    for(int i=0;i<=size+1;i++){
+    for(int i=0;i<=size;i++){
         sum=sum+i;
     }
     for(int i=0;i<size;i++){
